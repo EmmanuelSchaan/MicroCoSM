@@ -1,6 +1,6 @@
 #  MicroCoSM
 
-Microwave Components Sky Model: implements the foreground model in Dunkley+13 https://arxiv.org/abs/1301.0776
+Microwave Components Sky Model implements the foreground model in Dunkley+13 https://arxiv.org/abs/1301.0776
 Shows the frequency dependence of the extragalactic foregrounds in temperature, in terms of intensity, temperature [Kcmb] and Rayleigh-Jeans temperature [Krj].
 Shows the foreground power spectra for any pair of frequencies.
 
