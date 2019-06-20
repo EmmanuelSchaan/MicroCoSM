@@ -53,7 +53,7 @@ class CMB(object):
       # interpolate the frequency dependencies, for speed
       
       self.pathFreqDpdces = "./input/cmb/freq_dpdces.txt"
-      if not os.path.exists(self.pathFreqDpdces):
+      if True:#not os.path.exists(self.pathFreqDpdces):
          self.saveFreqDpdce()
       self.loadFreqDpdce()
 
@@ -341,11 +341,24 @@ class CMB(object):
    ##################################################################################
    # Frequency dependences of the various components, in intensity
 
-   def cmbFreqDpdceInt(self, nu):
-      '''Intensity units ([W/Hz/m^2/sr] or [Jy/sr])
+   def cmbMonopoleFreqDpdceInt(self, nu):
+      '''This is the frequency dependence of a blackbody at the temperature of the CMB,
+      like the CMB monopole.
+      Intensity units ([W/Hz/m^2/sr] or [Jy/sr])
       arbitrary normalization
       '''
       return self.blackbody(nu, self.Tcmb)
+
+   def cmbFluctuationsFreqDpdceInt(self, nu):
+      '''The CMB fluctuations, ie after subtracting the mean,
+      have a different frequency dependence,
+      since the intensity is nonlinear in the temperature:
+      delta I_nu = B_nu(T0+dT) - B_nu(T0)
+      = dB_nu(T0)/dT * dT + (correction that is smaller by a factor dT)
+      Intensity units ([W/Hz/m^2/sr] or [Jy/sr])
+      arbitrary normalization
+      '''
+      return self.dBdT(nu, self.Tcmb)
 
    def kszFreqDpdceInt(self, nu):
       '''Intensity units ([W/Hz/m^2/sr] or [Jy/sr])
@@ -408,41 +421,44 @@ class CMB(object):
       self.nNu = 501
       self.Nu = np.logspace(np.log10(0.1), np.log10(1.e4), self.nNu, 10.)*1.e9   # in Hz
 
-      data = np.zeros((self.nNu, 22))
+      data = np.zeros((self.nNu, 25))
       data[:,0] = self.Nu.copy()
 
       # Intensity freq dpdces
-      data[:,1] = np.array(map(self.cmbFreqDpdceInt, self.Nu))
-      data[:,2] = np.array(map(self.kszFreqDpdceInt, self.Nu))
-      data[:,3] = np.array(map(self.tszFreqDpdceInt, self.Nu))
-      data[:,4] = np.array(map(self.cibPoissonFreqDpdceInt, self.Nu))
-      data[:,5] = np.array(map(self.cibClusteredFreqDpdceInt, self.Nu))
-      data[:,6] = np.array(map(self.radioPoissonFreqDpdceInt, self.Nu))
-      data[:,7] = np.array(map(self.galacticDustFreqDpdceInt, self.Nu))
+      data[:,1] = np.array(map(self.cmbMonopoleFreqDpdceInt, self.Nu))
+      data[:,2] = np.array(map(self.cmbFluctuationsFreqDpdceInt, self.Nu))
+      data[:,3] = np.array(map(self.kszFreqDpdceInt, self.Nu))
+      data[:,4] = np.array(map(self.tszFreqDpdceInt, self.Nu))
+      data[:,5] = np.array(map(self.cibPoissonFreqDpdceInt, self.Nu))
+      data[:,6] = np.array(map(self.cibClusteredFreqDpdceInt, self.Nu))
+      data[:,7] = np.array(map(self.radioPoissonFreqDpdceInt, self.Nu))
+      data[:,8] = np.array(map(self.galacticDustFreqDpdceInt, self.Nu))
 
       # Thermo temperature freq dpdces
       f = lambda nu: self.convertIntSITo(nu, kind="tempKcmb")
       intToTemp = np.array(map(f, self.Nu))
       #
-      data[:,8] = data[:,1] * intToTemp
-      data[:,9] = data[:,2] * intToTemp
-      data[:,10] = data[:,3] * intToTemp
-      data[:,11] = data[:,4] * intToTemp
-      data[:,12] = data[:,5] * intToTemp
-      data[:,13] = data[:,6] * intToTemp
-      data[:,14] = data[:,7] * intToTemp
+      data[:,9] = data[:,1] * intToTemp
+      data[:,10] = data[:,2] * intToTemp
+      data[:,11] = data[:,3] * intToTemp
+      data[:,12] = data[:,4] * intToTemp
+      data[:,13] = data[:,5] * intToTemp
+      data[:,14] = data[:,6] * intToTemp
+      data[:,15] = data[:,7] * intToTemp
+      data[:,16] = data[:,8] * intToTemp
 
       # Rayleigh-Jeans temperature freq dpdces
       f = lambda nu: self.convertIntSITo(nu, kind="tempKrj")
       intToTempRJ = np.array(map(f, self.Nu))
       #
-      data[:,15] = data[:,1] * intToTempRJ
-      data[:,16] = data[:,2] * intToTempRJ
-      data[:,17] = data[:,3] * intToTempRJ
-      data[:,18] = data[:,4] * intToTempRJ
-      data[:,19] = data[:,5] * intToTempRJ
-      data[:,20] = data[:,6] * intToTempRJ
-      data[:,21] = data[:,7] * intToTempRJ
+      data[:,17] = data[:,1] * intToTempRJ
+      data[:,18] = data[:,2] * intToTempRJ
+      data[:,19] = data[:,3] * intToTempRJ
+      data[:,20] = data[:,4] * intToTempRJ
+      data[:,21] = data[:,5] * intToTempRJ
+      data[:,22] = data[:,6] * intToTempRJ
+      data[:,23] = data[:,7] * intToTempRJ
+      data[:,24] = data[:,8] * intToTempRJ
 
       
       np.savetxt(self.pathFreqDpdces, data)
@@ -453,31 +469,34 @@ class CMB(object):
       self.Nu = data[:,0]
 
       # interpolate the freq dpdces for intensity
-      self.cmbFreqDpdceI = interp1d(data[:,0], data[:,1], kind='linear', bounds_error=False, fill_value=0.)
-      self.kszFreqDpdceI = interp1d(data[:,0], data[:,2], kind='linear', bounds_error=False, fill_value=0.)
-      self.tszFreqDpdceI = interp1d(data[:,0], data[:,3], kind='linear', bounds_error=False, fill_value=0.)
-      self.cibPoissonFreqDpdceI = interp1d(data[:,0], data[:,4], kind='linear', bounds_error=False, fill_value=0.)
-      self.cibClusteredFreqDpdceI = interp1d(data[:,0], data[:,5], kind='linear', bounds_error=False, fill_value=0.)
-      self.radioPoissonFreqDpdceI = interp1d(data[:,0], data[:,6], kind='linear', bounds_error=False, fill_value=0.)
-      self.galacticDustFreqDpdceI = interp1d(data[:,0], data[:,7], kind='linear', bounds_error=False, fill_value=0.)
+      self.cmbMonopoleFreqDpdceI = interp1d(data[:,0], data[:,1], kind='linear', bounds_error=False, fill_value=0.)
+      self.cmbFluctuationsFreqDpdceI = interp1d(data[:,0], data[:,2], kind='linear', bounds_error=False, fill_value=0.)
+      self.kszFreqDpdceI = interp1d(data[:,0], data[:,3], kind='linear', bounds_error=False, fill_value=0.)
+      self.tszFreqDpdceI = interp1d(data[:,0], data[:,4], kind='linear', bounds_error=False, fill_value=0.)
+      self.cibPoissonFreqDpdceI = interp1d(data[:,0], data[:,5], kind='linear', bounds_error=False, fill_value=0.)
+      self.cibClusteredFreqDpdceI = interp1d(data[:,0], data[:,6], kind='linear', bounds_error=False, fill_value=0.)
+      self.radioPoissonFreqDpdceI = interp1d(data[:,0], data[:,7], kind='linear', bounds_error=False, fill_value=0.)
+      self.galacticDustFreqDpdceI = interp1d(data[:,0], data[:,8], kind='linear', bounds_error=False, fill_value=0.)
 
       # interpolate the freq dpdces for thermodynamical temperature
-      self.cmbFreqDpdceT = interp1d(data[:,0], data[:,8], kind='linear', bounds_error=False, fill_value=0.)
-      self.kszFreqDpdceT = interp1d(data[:,0], data[:,9], kind='linear', bounds_error=False, fill_value=0.)
-      self.tszFreqDpdceT = interp1d(data[:,0], data[:,10], kind='linear', bounds_error=False, fill_value=0.)
-      self.cibPoissonFreqDpdceT = interp1d(data[:,0], data[:,11], kind='linear', bounds_error=False, fill_value=0.)
-      self.cibClusteredFreqDpdceT = interp1d(data[:,0], data[:,12], kind='linear', bounds_error=False, fill_value=0.)
-      self.radioPoissonFreqDpdceT = interp1d(data[:,0], data[:,13], kind='linear', bounds_error=False, fill_value=0.)
-      self.galacticDustFreqDpdceT = interp1d(data[:,0], data[:,14], kind='linear', bounds_error=False, fill_value=0.)
+      self.cmbMonopoleFreqDpdceT = interp1d(data[:,0], data[:,9], kind='linear', bounds_error=False, fill_value=0.)
+      self.cmbFluctuationsFreqDpdceT = interp1d(data[:,0], data[:,10], kind='linear', bounds_error=False, fill_value=0.)
+      self.kszFreqDpdceT = interp1d(data[:,0], data[:,11], kind='linear', bounds_error=False, fill_value=0.)
+      self.tszFreqDpdceT = interp1d(data[:,0], data[:,12], kind='linear', bounds_error=False, fill_value=0.)
+      self.cibPoissonFreqDpdceT = interp1d(data[:,0], data[:,13], kind='linear', bounds_error=False, fill_value=0.)
+      self.cibClusteredFreqDpdceT = interp1d(data[:,0], data[:,14], kind='linear', bounds_error=False, fill_value=0.)
+      self.radioPoissonFreqDpdceT = interp1d(data[:,0], data[:,15], kind='linear', bounds_error=False, fill_value=0.)
+      self.galacticDustFreqDpdceT = interp1d(data[:,0], data[:,16], kind='linear', bounds_error=False, fill_value=0.)
 
       # interpolate the freq dpdces for Rayleigh-Jeans temperature
-      self.cmbFreqDpdceTrj = interp1d(data[:,0], data[:,15], kind='linear', bounds_error=False, fill_value=0.)
-      self.kszFreqDpdceTrj = interp1d(data[:,0], data[:,16], kind='linear', bounds_error=False, fill_value=0.)
-      self.tszFreqDpdceTrj = interp1d(data[:,0], data[:,17], kind='linear', bounds_error=False, fill_value=0.)
-      self.cibPoissonFreqDpdceTrj = interp1d(data[:,0], data[:,18], kind='linear', bounds_error=False, fill_value=0.)
-      self.cibClusteredFreqDpdceTrj = interp1d(data[:,0], data[:,19], kind='linear', bounds_error=False, fill_value=0.)
-      self.radioPoissonFreqDpdceTrj = interp1d(data[:,0], data[:,20], kind='linear', bounds_error=False, fill_value=0.)
-      self.galacticDustFreqDpdceTrj = interp1d(data[:,0], data[:,21], kind='linear', bounds_error=False, fill_value=0.)
+      self.cmbMonopoleFreqDpdceTrj = interp1d(data[:,0], data[:,17], kind='linear', bounds_error=False, fill_value=0.)
+      self.cmbFluctuationsFreqDpdceTrj = interp1d(data[:,0], data[:,18], kind='linear', bounds_error=False, fill_value=0.)
+      self.kszFreqDpdceTrj = interp1d(data[:,0], data[:,19], kind='linear', bounds_error=False, fill_value=0.)
+      self.tszFreqDpdceTrj = interp1d(data[:,0], data[:,20], kind='linear', bounds_error=False, fill_value=0.)
+      self.cibPoissonFreqDpdceTrj = interp1d(data[:,0], data[:,21], kind='linear', bounds_error=False, fill_value=0.)
+      self.cibClusteredFreqDpdceTrj = interp1d(data[:,0], data[:,22], kind='linear', bounds_error=False, fill_value=0.)
+      self.radioPoissonFreqDpdceTrj = interp1d(data[:,0], data[:,23], kind='linear', bounds_error=False, fill_value=0.)
+      self.galacticDustFreqDpdceTrj = interp1d(data[:,0], data[:,24], kind='linear', bounds_error=False, fill_value=0.)
 
 
    def plotFreqDpdce(self, lMin=2.e3, lMax=3.e3):
@@ -497,8 +516,11 @@ class CMB(object):
       
       
       # Temperatures [muKcmb], as a function of freq
-      DTcmb = dTcmb * self.cmbFreqDpdceT(self.Nu)
-      DTcmb /= np.sqrt( self.cmbFreqDpdceT(self.nu1) * self.cmbFreqDpdceT(self.nu2) )
+      DTcmbMonopole = dTcmb * self.cmbMonopoleFreqDpdceT(self.Nu)
+      DTcmbMonopole /= np.sqrt( self.cmbMonopoleFreqDpdceT(self.nu1) * self.cmbMonopoleFreqDpdceT(self.nu2) )
+      #
+      DTcmbFluctuations = dTcmb * self.cmbFluctuationsFreqDpdceT(self.Nu)
+      DTcmbFluctuations /= np.sqrt( self.cmbFluctuationsFreqDpdceT(self.nu1) * self.cmbFluctuationsFreqDpdceT(self.nu2) )
       #
       DTksz = dTksz * self.kszFreqDpdceT(self.Nu)
       DTksz /= np.sqrt( self.kszFreqDpdceT(self.nu1) * self.kszFreqDpdceT(self.nu2) )
@@ -519,7 +541,8 @@ class CMB(object):
       factor /= self.convertIntSITo(self.Nu, kind="tempKcmb")  # convert to SI
       factor *= self.convertIntSITo(self.Nu, kind="intJy/sr")  # convert to Jy/sr
       #
-      DIcmb = DTcmb * factor
+      DIcmbMonopole = DTcmbMonopole * factor
+      DIcmbFluctuations = DTcmbFluctuations * factor
       DIksz = DTksz * factor
       DItsz = DTtsz * factor
       DIcib = DTcib * factor
@@ -530,7 +553,8 @@ class CMB(object):
       factor = self.convertIntSITo(self.Nu, kind="tempKrj")
       factor /= self.convertIntSITo(self.Nu, kind="tempKcmb")
       #
-      DTcmbRJ = DTcmb * factor
+      DTcmbMonopoleRJ = DTcmbMonopole * factor
+      DTcmbFluctuationsRJ = DTcmbFluctuations * factor
       DTkszRJ = DTksz * factor
       DTtszRJ = DTtsz * factor
       DTcibRJ = DTcib * factor
@@ -542,7 +566,8 @@ class CMB(object):
       ax=fig.add_subplot(111)
       #
       ax.axhline(0.)
-      ax.plot(self.Nu/1.e9, DIcmb, label=r'CMB')
+      ax.plot(self.Nu/1.e9, DIcmbMonopole, lw=0.5, ls='--', label=r'CMB mono.')
+      ax.plot(self.Nu/1.e9, DIcmbFluctuations, label=r'CMB fluct.')
       ax.plot(self.Nu/1.e9, DIksz, label=r'kSZ')
       ax.plot(self.Nu/1.e9, DItsz, label=r'tSZ')
       ax.plot(self.Nu/1.e9, DIcib, label=r'CIB')
@@ -560,7 +585,8 @@ class CMB(object):
       ax=fig.add_subplot(111)
       #
       ax.axhline(0.)
-      ax.plot(self.Nu/1.e9, DIcmb, label=r'CMB')
+      ax.plot(self.Nu/1.e9, DIcmbMonopole, lw=0.5, ls='--', label=r'CMB mono.')
+      ax.plot(self.Nu/1.e9, DIcmbFluctuations, label=r'CMB fluct.')
       ax.plot(self.Nu/1.e9, DIksz, label=r'kSZ')
       ax.plot(self.Nu/1.e9, DItsz, 'g', label=r'tSZ')
       ax.plot(self.Nu/1.e9, -DItsz, 'g--')
@@ -581,7 +607,8 @@ class CMB(object):
       ax=fig.add_subplot(111)
       #
       ax.axhline(0.)
-      ax.plot(self.Nu/1.e9, DTcmb, label=r'CMB')
+      ax.plot(self.Nu/1.e9, DTcmbMonopole, lw=0.5, ls='--', label=r'CMB mono.')
+      ax.plot(self.Nu/1.e9, DTcmbFluctuations, label=r'CMB fluct.')
       ax.plot(self.Nu/1.e9, DTksz, label=r'kSZ')
       ax.plot(self.Nu/1.e9, DTtsz, 'g', label=r'tSZ')
       ax.plot(self.Nu/1.e9, -DTtsz, 'g--')
@@ -601,7 +628,8 @@ class CMB(object):
       ax=fig.add_subplot(111)
       #
       ax.axhline(0.)
-      ax.plot(self.Nu/1.e9, DTcmbRJ, label=r'CMB')
+      ax.plot(self.Nu/1.e9, DTcmbMonopoleRJ, lw=0.5, ls='--', label=r'CMB mono.')
+      ax.plot(self.Nu/1.e9, DTcmbFluctuationsRJ, label=r'CMB fluct.')
       ax.plot(self.Nu/1.e9, DTkszRJ, label=r'kSZ')
       ax.plot(self.Nu/1.e9, DTtszRJ, 'g', label=r'tSZ')
       ax.plot(self.Nu/1.e9, -DTtszRJ, 'g--')
