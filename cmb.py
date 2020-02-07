@@ -46,7 +46,7 @@ class CMB(object):
       self.nu0 = 150.e9
       
       # convert from Dl to Cl: Dl = l(l+1) Cl / 2pi
-      self.fdl_to_cl = lambda l: 2. * np.pi / (l*(l+1.))
+      self.fdl_to_cl = lambda l: divide(2.*np.pi, l*(l+1.))
    
       ##################################################################################
       ##################################################################################
@@ -573,7 +573,7 @@ class CMB(object):
       ax.plot(self.Nu/1.e9, DIcib, label=r'CIB')
       ax.plot(self.Nu/1.e9, DIradiops, label=r'Radio PS')
       #
-      ax.legend(loc=1)
+      ax.legend(loc=1, fontsize='x-small', labelspacing=0.1)
       ax.set_xlim((0., 1.e3))
       ax.set_ylim((-1.e3, 4.e3))
       ax.set_xlabel(r'$\nu$ [GHz]')
@@ -593,7 +593,7 @@ class CMB(object):
       ax.plot(self.Nu/1.e9, DIcib, label=r'CIB')
       ax.plot(self.Nu/1.e9, DIradiops, label=r'Radio PS')
       #
-      ax.legend(loc=2)
+      ax.legend(loc=2, fontsize='x-small', labelspacing=0.1)
       ax.set_xscale('log', nonposx='clip')
       ax.set_yscale('log', nonposy='clip')
       ax.set_xlim((1., 1.e4))
@@ -615,7 +615,7 @@ class CMB(object):
       ax.plot(self.Nu/1.e9, DTcib, label=r'CIB')
       ax.plot(self.Nu/1.e9, DTradiops, label=r'Radio PS')
       #
-      ax.legend(loc=1)
+      ax.legend(loc=1, fontsize='x-small', labelspacing=0.1)
       ax.set_xscale('log', nonposx='clip')
       ax.set_yscale('log', nonposy='clip')
       ax.set_ylim((5.e-3, 1.e4))
@@ -636,7 +636,7 @@ class CMB(object):
       ax.plot(self.Nu/1.e9, DTcibRJ, label=r'CIB')
       ax.plot(self.Nu/1.e9, DTradiopsRJ, label=r'Radio PS')
       #
-      ax.legend(loc=1)
+      ax.legend(loc=1, fontsize='x-small', labelspacing=0.1)
       ax.set_xscale('log', nonposx='clip')
       ax.set_yscale('log', nonposy='clip')
       ax.set_ylim((5.e-3, 1.e4))
@@ -789,7 +789,7 @@ class CMB(object):
       ax.loglog(L, f * self.ftotalBB(L), 'g', lw=1)
       #
       ax.grid()
-      ax.legend(loc=1)
+      ax.legend(loc=1, fontsize='x-small', labelspacing=0.1)
       #ax.set_xlim((1.e2, 1.e4))
       ax.set_ylim((1.e-6, 1.e5))
       ax.set_xlabel(r'$\ell$')
@@ -824,7 +824,7 @@ class CMB(object):
       ax.loglog(L, f * self.ftotalTT(L), 'k', lw=2, label=r'total')
       #
       ax.grid()
-      ax.legend(loc=2)
+      ax.legend(loc=2, fontsize='x-small', labelspacing=0.1)
       ax.set_xlim((100., 2.4e4))
       ax.set_ylim((1.e-4, 1.e6))
       ax.set_xlabel(r'$\ell$')

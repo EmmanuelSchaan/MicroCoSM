@@ -217,4 +217,12 @@ def currentRssMB(pid=None):
    return result / 1.e6
 
 
+##################################################################################
+
+def divide(x, y, exceptOut=0.):
+   '''Returns 0. or any requested value
+   when dividing by zero.
+   '''
+   try: return x/y
+   except ZeroDivisionError: return exceptOut
 
