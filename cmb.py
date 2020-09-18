@@ -364,7 +364,8 @@ class CMB(object):
       '''Intensity units ([W/Hz/m^2/sr] or [Jy/sr])
       arbitrary normalization
       '''
-      return self.blackbody(nu, self.Tcmb)
+#      return self.blackbody(nu, self.Tcmb)
+      return self.dBdT(nu, self.Tcmb)
 
    def tszFreqDpdceInt(self, nu):
       '''Intensity units ([W/Hz/m^2/sr] or [Jy/sr])
@@ -703,6 +704,29 @@ class CMB(object):
       return result
 
 
+   ##################################################################################
+   ##################################################################################
+
+   def beamSolidAngle(self, fwhm):
+      ''' Computes the beam solid angle [sr]
+      given a Gaussian beam of the requested fwhm [arcmin].
+      '''
+      fwhm *= np.pi / (180.*60.) # convert to [rad]
+      sigma = fwhm / np.sqrt(8.*np.log(2.))
+      def integrand(r):
+         result = np.exp(-0.5*r**2/sigma**2)
+         result *= 2.*np.pi*r
+         return result
+      return integrate.quad(integrand, 0., 10.*sigma, epsabs=0., epsrel=1.e-3)[0]
+         
+   def fwhmFromSolidAngle(self, solidAngle):
+      '''Given a beam solid angle [sr],
+      compute the fwhm [arcmin] of the Gaussian beam
+      which has this solid angle.
+      '''
+      f = lambda fwhm: self.beamSolidAngle(fwhm) - solidAngle
+      return optimize.brentq(f , 1.e-3, 1.e3)
+
 
    ##################################################################################
    ##################################################################################
@@ -854,6 +878,9 @@ cmbs4 = CMB(beam=1., noise=1., nu1=143.e9, nu2=143.e9, lMin=1., lMaxT=1.e4, lMax
 
 # the "reference CMB experiment" from Hu Okamoto 2002
 huokamoto02 = CMB(beam=4., noise=1., nu1=143.e9, nu2=143.e9, lMin=1., lMaxT=1.e4, lMaxP=1.e4, atm=False, name="cmbs4")
+
+# Simons Observatory
+cmb = CMB(beam=1.4, noise=7., nu1=143.e9, nu2=143.e9, lMin=1., lMaxT=3.e3, lMaxP=5.e3, fg=True, atm=False, name="so")
 '''
 
 ###############################################################################

@@ -37,5 +37,5 @@ cmb.plotFreqDpdce()
 # TT, EE, TE and BB
 cmb.plotCl()
 
-## TT: various foreground components
+# TT: various foreground components
 cmb.plotClTT()

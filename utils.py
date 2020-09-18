@@ -216,13 +216,58 @@ def currentRssMB(pid=None):
    result = memory['rss']  # in Bytes
    return result / 1.e6
 
-
 ##################################################################################
+
+# !!! works only on scalars, not on arrays
+#def divide(x, y, exceptOut=0.):
+#   '''Returns 0. or any requested value
+#   when dividing by zero.
+#   '''
+#   try: return x/y
+#   except ZeroDivisionError: return exceptOut
+
 
 def divide(x, y, exceptOut=0.):
    '''Returns 0. or any requested value
    when dividing by zero.
+   Works both on scalars and arrays.
    '''
-   try: return x/y
-   except ZeroDivisionError: return exceptOut
+   # if both inputs are scalar, make one an array
+   inputScalar = False
+   if np.shape(x)==() and np.shape(y)==():
+      inputScalar = True
+      x = np.array([x])
+   # do the division
+   result = x / y
+   # where it went wrong, replace value with exceptOut
+   result[np.where(np.isfinite(result)==False)] = exceptOut
+   # if inputs were both scalar, make the result a scalar
+   if inputScalar:
+      result = result[0]
+   return result
+
+def splitBins(x, nBins):
+   '''Give the nBins+1 edges of the nBins bins,
+   such that there is an equal number of elements of x
+   in each bin.
+   '''
+   nBins = np.int(nBins)
+   # sort the x values
+   xSorted = np.sort(x)
+   # corresponding probability
+   proba = 1. * np.arange(len(x)) / (len(x) - 1)
+   # interpolate the CDF
+   # scipy is smart: even if twice the same x appears,
+   # it will know to give the interpolating function the right jump
+   cdf = interp1d(xSorted, proba, kind='linear', bounds_error=False, fill_value=(0., 1.))
+
+   # fill an array with the z-bounds of the bins
+   binEdges = np.zeros(nBins+1)
+   binEdges[0] = np.min(x)
+   binEdges[-1] = np.max(x)
+   for iBin in range(nBins-1):
+      # force equal number of objects per bins
+      f = lambda xMax: cdf(xMax) - (iBin+1.)/nBins
+      binEdges[iBin+1] = optimize.brentq(f , binEdges[0], binEdges[-1])
+   return binEdges
 
