@@ -377,7 +377,7 @@ class CMB(object):
       # freq dpdce such that dT = (freq dpdce) * 2.*y
       result *= self.Tcmb
       # freq dpdce such that dI = (freq dpdce) * 2.*y
-      result *= self.blackbody(nu, self.Tcmb)
+      result *= self.dBdT(nu, self.Tcmb)
       return result
 
    def cibPoissonFreqDpdceInt(self, nu):
