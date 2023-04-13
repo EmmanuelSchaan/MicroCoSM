@@ -426,18 +426,18 @@ class CMB(object):
       data[:,0] = self.Nu.copy()
 
       # Intensity freq dpdces
-      data[:,1] = np.array(map(self.cmbMonopoleFreqDpdceInt, self.Nu))
-      data[:,2] = np.array(map(self.cmbFluctuationsFreqDpdceInt, self.Nu))
-      data[:,3] = np.array(map(self.kszFreqDpdceInt, self.Nu))
-      data[:,4] = np.array(map(self.tszFreqDpdceInt, self.Nu))
-      data[:,5] = np.array(map(self.cibPoissonFreqDpdceInt, self.Nu))
-      data[:,6] = np.array(map(self.cibClusteredFreqDpdceInt, self.Nu))
-      data[:,7] = np.array(map(self.radioPoissonFreqDpdceInt, self.Nu))
-      data[:,8] = np.array(map(self.galacticDustFreqDpdceInt, self.Nu))
+      data[:,1] = np.array(list(map(self.cmbMonopoleFreqDpdceInt, self.Nu)))
+      data[:,2] = np.array(list(map(self.cmbFluctuationsFreqDpdceInt, self.Nu)))
+      data[:,3] = np.array(list(map(self.kszFreqDpdceInt, self.Nu)))
+      data[:,4] = np.array(list(map(self.tszFreqDpdceInt, self.Nu)))
+      data[:,5] = np.array(list(map(self.cibPoissonFreqDpdceInt, self.Nu)))
+      data[:,6] = np.array(list(map(self.cibClusteredFreqDpdceInt, self.Nu)))
+      data[:,7] = np.array(list(map(self.radioPoissonFreqDpdceInt, self.Nu)))
+      data[:,8] = np.array(list(map(self.galacticDustFreqDpdceInt, self.Nu)))
 
       # Thermo temperature freq dpdces
       f = lambda nu: self.convertIntSITo(nu, kind="tempKcmb")
-      intToTemp = np.array(map(f, self.Nu))
+      intToTemp = np.array(list(map(f, self.Nu)))
       #
       data[:,9] = data[:,1] * intToTemp
       data[:,10] = data[:,2] * intToTemp
@@ -450,7 +450,7 @@ class CMB(object):
 
       # Rayleigh-Jeans temperature freq dpdces
       f = lambda nu: self.convertIntSITo(nu, kind="tempKrj")
-      intToTempRJ = np.array(map(f, self.Nu))
+      intToTempRJ = np.array(list(map(f, self.Nu)))
       #
       data[:,17] = data[:,1] * intToTempRJ
       data[:,18] = data[:,2] * intToTempRJ
@@ -578,7 +578,7 @@ class CMB(object):
       ax.set_xlim((0., 1.e3))
       ax.set_ylim((-1.e3, 4.e3))
       ax.set_xlabel(r'$\nu$ [GHz]')
-      ax.set_ylabel(r'$\delta I_\text{RMS}$ [Jy/sr]')
+      ax.set_ylabel(r'$\delta I_{RMS}$ [Jy/sr]')
    
    
       # Intensity [Jy/sr], log-log
@@ -595,12 +595,12 @@ class CMB(object):
       ax.plot(self.Nu/1.e9, DIradiops, label=r'Radio PS')
       #
       ax.legend(loc=2, fontsize='x-small', labelspacing=0.1)
-      ax.set_xscale('log', nonposx='clip')
-      ax.set_yscale('log', nonposy='clip')
+      ax.set_xscale('log', nonpositive='clip')
+      ax.set_yscale('log', nonpositive='clip')
       ax.set_xlim((1., 1.e4))
       ax.set_ylim((1., 1.e6))
       ax.set_xlabel(r'$\nu$ [GHz]')
-      ax.set_ylabel(r'$\delta I_\text{RMS}$ [Jy/sr]')
+      ax.set_ylabel(r'$\delta I_{RMS}$ [Jy/sr]')
 
 
       # Temperature [muKcmb]
@@ -617,11 +617,11 @@ class CMB(object):
       ax.plot(self.Nu/1.e9, DTradiops, label=r'Radio PS')
       #
       ax.legend(loc=1, fontsize='x-small', labelspacing=0.1)
-      ax.set_xscale('log', nonposx='clip')
-      ax.set_yscale('log', nonposy='clip')
+      ax.set_xscale('log', nonpositive='clip')
+      ax.set_yscale('log', nonpositive='clip')
       ax.set_ylim((5.e-3, 1.e4))
       ax.set_xlabel(r'$\nu$ [GHz]')
-      ax.set_ylabel(r'$\delta T_\text{RMS}$ [$\mu$K$_\text{CMB}$]')
+      ax.set_ylabel(r'$\delta T_{RMS}$ [$\mu$K$_{CMB}$]')
 
 
       # Temperature [muKrj]
@@ -638,11 +638,11 @@ class CMB(object):
       ax.plot(self.Nu/1.e9, DTradiopsRJ, label=r'Radio PS')
       #
       ax.legend(loc=1, fontsize='x-small', labelspacing=0.1)
-      ax.set_xscale('log', nonposx='clip')
-      ax.set_yscale('log', nonposy='clip')
+      ax.set_xscale('log', nonpositive='clip')
+      ax.set_yscale('log', nonpositive='clip')
       ax.set_ylim((5.e-3, 1.e4))
       ax.set_xlabel(r'$\nu$ [GHz]')
-      ax.set_ylabel(r'$\delta T_\text{RMS}$ [$\mu$K$_\text{RJ}$]')
+      ax.set_ylabel(r'$\delta T_{RMS}$ [$\mu$K$_{RJ}$]')
 
 
       plt.show()
@@ -674,11 +674,11 @@ class CMB(object):
       fwhm = None for current experiment beam
       fwhm = any other value in rad
       '''
-      print "- temperature fluctuations due to CMB:", self.rmsT(self.flensedTT), "muK"
+      print("- temperature fluctuations due to CMB:", self.rmsT(self.flensedTT), "muK")
       # detector noise would diverge, because it is a constant divided by the beam**2
-      print "- temperature fluctuations due to CIB:", self.rmsT(self.fCIB), "muK"
-      print "- temperature fluctuations due to tSZ:", self.rmsT(self.ftSZ), "muK"
-      print "- temperature fluctuations due to kSZ:", self.rmsT(self.fkSZ), "muK"
+      print("- temperature fluctuations due to CIB:", self.rmsT(self.fCIB), "muK")
+      print("- temperature fluctuations due to tSZ:", self.rmsT(self.ftSZ), "muK")
+      print("- temperature fluctuations due to kSZ:", self.rmsT(self.fkSZ), "muK")
       
       
    def fsigmaMatchedFilter(self, fprofile=None, ftotalTT=None, lMin=None, lMax=None):
@@ -817,7 +817,7 @@ class CMB(object):
       #ax.set_xlim((1.e2, 1.e4))
       ax.set_ylim((1.e-6, 1.e5))
       ax.set_xlabel(r'$\ell$')
-      ax.set_ylabel(r'$\ell(\ell+1)\; C_\ell \; /(2\pi)$ [$(\mu K_\text{CMB})^2$]')
+      ax.set_ylabel(r'$\ell(\ell+1)\; C_{\ell} \; /(2\pi)$ [$(\mu K_{CMB})^2$]')
 
       plt.show()
 
@@ -852,7 +852,8 @@ class CMB(object):
       ax.set_xlim((100., 2.4e4))
       ax.set_ylim((1.e-4, 1.e6))
       ax.set_xlabel(r'$\ell$')
-      ax.set_ylabel(r'$\ell(\ell+1)\; C_\ell \; /(2\pi)$ [$(\mu K_\text{CMB})^2$]')
+      ax.set_ylabel(r'$\ell(\ell+1)\; C_{\ell} \; /(2\pi)$ [$(\mu K_{CMB})^2$]')
+
 
       plt.show()
 
