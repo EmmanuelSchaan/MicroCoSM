@@ -13,32 +13,50 @@ import matplotlib.gridspec as gridspec
 import matplotlib.ticker as ticker
 from matplotlib.colors import LogNorm
 import matplotlib.colors as mc
-from matplotlib.mlab import bivariate_normal
 import colorsys
 from timeit import timeit
 from time import time
 from copy import copy
 import sys
 
+#The bivariate_normal is no longer available in mlab.py
+#from matplotlib.mlab import bivariate_normal 
+#We can simply create it
+def bivariate_normal(X, Y, sigmax=1.0, sigmay=1.0,
+                     mux=0.0, muy=0.0, sigmaxy=0.0):
+    """
+    Bivariate Gaussian distribution for equal shape *X*, *Y*.
+    See `bivariate normal
+    <http://mathworld.wolfram.com/BivariateNormalDistribution.html>`_
+    at mathworld.
+    """
+    Xmu = X-mux
+    Ymu = Y-muy
+
+    rho = sigmaxy/(sigmax*sigmay)
+    z = Xmu**2/sigmax**2 + Ymu**2/sigmay**2 - 2*rho*Xmu*Ymu/(sigmax*sigmay)
+    denom = 2*np.pi*sigmax*sigmay*np.sqrt(1-rho**2)
+    return np.exp(-z/(2*(1-rho**2))) / denom
+
 
 ##################################################################################
 # for pretty plots
 
-from matplotlib import rc
-#rc('font',**{'size':'20','family':'sans-serif','sans-serif':['Computer Modern Sans serif']})
-rc('font',**{'size':'22','family':'serif','serif':['CMU serif']})
-rc('mathtext', **{'fontset':'cm'})
-rc('text', usetex=True)
-rc('text.latex', preamble='\usepackage{amsmath}, \usepackage{amssymb}')
-#rc('font', size=20)
-rc('legend',**{'fontsize':'18'})
-
-# fonty stuffs
-#font.serif: CMU Serif
-#font.family: serif
-#mathtext.fontset: cm
-#text.usetex: False
-#text.latex.preamble: \usepackage{amsmath}
+#from matplotlib import rc
+##rc('font',**{'size':'20','family':'sans-serif','sans-serif':['Computer Modern Sans serif']})
+#rc('font',**{'size':'22','family':'serif','serif':['CMU serif']})
+#rc('mathtext', **{'fontset':'cm'})
+#rc('text', usetex=True)
+##rc('text.latex', preamble='/usepackage{amsmath}, /usepackage{amssymb}')
+##rc('font', size=20)
+#rc('legend',**{'fontsize':'18'})
+#
+## fonty stuffs
+##font.serif: CMU Serif
+##font.family: serif
+##mathtext.fontset: cm
+##text.usetex: False
+##text.latex.preamble: /usepackage{amsmath}
 
 def darkerLighter(color, amount=0.):
    """
@@ -68,6 +86,8 @@ def darkerLighter(color, amount=0.):
 
 
 ##################################################################################
+
+from importlib import reload
 
 import utils
 reload(utils)
